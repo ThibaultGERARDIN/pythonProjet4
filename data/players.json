@@ -1,0 +1,61 @@
+[
+    {
+        "lastname": "Player",
+        "firstname": "One",
+        "date_of_birth": "1991-03-01",
+        "national_chess_id": "AB12345",
+        "score": 0
+    },
+    {
+        "lastname": "Player",
+        "firstname": "Two",
+        "date_of_birth": "1991-03-02",
+        "national_chess_id": "BC12345",
+        "score": 0
+    },
+    {
+        "lastname": "Player",
+        "firstname": "Three",
+        "date_of_birth": "1991-03-03",
+        "national_chess_id": "CD12345",
+        "score": 0
+    },
+    {
+        "lastname": "Player",
+        "firstname": "Four",
+        "date_of_birth": "1991-03-04",
+        "national_chess_id": "EF12345",
+        "score": 0
+    },
+    {
+        "lastname": "Player",
+        "firstname": "Five",
+        "date_of_birth": "1991-03-05",
+        "national_chess_id": "GH12345",
+        "score": 0
+    },
+    {
+        "lastname": "Player",
+        "firstname": "Six",
+        "date_of_birth": "1991-03-06",
+        "national_chess_id": "IJ12345",
+        "score": 0
+    },
+    {
+        "lastname": "Player",
+        "firstname": "Seven",
+        "date_of_birth": "1991-03-07",
+        "national_chess_id": "KL12345",
+        "score": 0
+    },
+    {
+        "lastname": "Player",
+        "firstname": "Eight",
+        "date_of_birth": "1991-03-08",
+        "national_chess_id": "MN12345",
+        "score": 0
+    }
+]
+
+
+
