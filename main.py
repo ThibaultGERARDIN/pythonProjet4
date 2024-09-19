@@ -1,38 +1,45 @@
 import json
-from models.players import Player
-from models.matches import Match
+
+# from models.players import Player
+# from models.matches import Match
 from models.rounds import Round
+from models.tournament import Tournament
+from controllers.base import MatchResult, Controller, TournamentResults
 
 
 players_data = open("./data/players.json")
 players_list = json.load(players_data)
 
-tournament_players = []
+controller = Controller(players_list)
+tournament_players = controller.add_players()
 
-for player in players_list:
-    player_in = Player(
-        player["lastname"],
-        player["firstname"],
-        player["date_of_birth"],
-        player["national_chess_id"],
-        player["score"],
-    )
-    tournament_players.append(player_in)
-
-number_of_matches = int(len(tournament_players) / 2)
-
-match_list = []
-
-player_draw_list = tournament_players.copy()
-
-for i in range(number_of_matches):
-    player_1 = player_draw_list.pop(0)
-    player_2 = player_draw_list.pop(0)
-    match_list.append(Match(player_1, player_2))
-
-print(match_list[0].players[0])
+# name = input("Tapez le nom du tournoi : ")
+# location = input("Tapez le lieu du tournoi : ")
+# description = input("Tapez la description du tournoi : ")
+name = "test"
+location = "test"
+description = "test"
 
 
-round_1 = Round(match_list, "Round 1")
+tournament = Tournament(name, location, tournament_players, description)
 
-print(round_1.matches[0])
+
+for i in range(tournament.number_of_rounds):
+
+    tournament.current_round = i + 1
+    match_list = controller.draw_matches(tournament_players)
+
+    round = Round(match_list, f"Round {i+1}")
+
+    for match in round.matches:
+        match_result = MatchResult(match, tournament_players)
+        winner = match_result.select_winner()
+        match_result.add_score()
+
+    tournament.rounds.append(round)
+
+tournament_result = TournamentResults(tournament)
+
+# print(controller.previous_matches)
+print(tournament.rounds)
+print(tournament_result)

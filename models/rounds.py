@@ -24,4 +24,4 @@ class Round:
 
     def __repr__(self):
         """Used in print."""
-        return self.matches
+        return str(self)
