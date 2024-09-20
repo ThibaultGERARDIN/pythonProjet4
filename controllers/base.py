@@ -65,9 +65,6 @@ class Controller:
             while match_already_played and attempts < len(player_draw_list):
                 player_draw_list.append(player_2)
                 player_2 = player_draw_list.pop(0)
-                player_draw_list.sort(
-                    key=lambda player: player.score, reverse=True
-                )
                 match_already_played = self.check_previous_matches(
                     player_1, player_2
                 )
@@ -75,7 +72,9 @@ class Controller:
                 if attempts >= len(player_draw_list):
                     # S'il n'est pas possible de trouver un match non répété
                     print("Aucun match non répété n'a pu être trouvé.")
-
+            player_draw_list.sort(
+                key=lambda player: player.score, reverse=True
+            )
             match_list.append(Match(player_1, player_2))
         self.previous_matches.extend(match_list)
         return match_list

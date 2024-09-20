@@ -23,7 +23,7 @@ class Player:
         return (
             f"Nom : {self.lastname} Prénom : {self.firstname}\n"
             f"Date de naissance : {self.date_of_birth}\n"
-            f"N°INE : {self.national_chess_id}\nScore : {self.score} "
+            f"N°INE : {self.national_chess_id}\nScore : {self.score}\n"
         )
 
     def __repr__(self):
