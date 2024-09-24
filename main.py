@@ -1,17 +1,16 @@
 import json
-
-# from models.players import Player
-# from models.matches import Match
-from models.rounds import Round
 from models.tournament import Tournament
-from controllers.base import MatchResult, Controller, TournamentResults
-
+from controllers.base import (
+    Controller,
+    CreateTounament,
+)
+from controllers.crud import SaveTournament
 
 players_data = open("./data/players.json")
 players_list = json.load(players_data)
 
-controller = Controller(players_list)
-tournament_players = controller.add_players()
+
+tournament_players = CreateTounament(players_list).tournament_players()
 
 # name = input("Tapez le nom du tournoi : ")
 # location = input("Tapez le lieu du tournoi : ")
@@ -22,24 +21,21 @@ description = "test"
 
 
 tournament = Tournament(name, location, tournament_players, description)
+controller = Controller(tournament)
 
 
-for i in range(tournament.number_of_rounds):
+controller.start_tournament(tournament)
 
-    tournament.current_round = i + 1
-    match_list = controller.draw_matches(tournament_players)
+tournament_result = tournament.result()
 
-    round = Round(match_list, f"Round {i+1}")
+saver = SaveTournament(tournament)
+saver.save_state()
 
-    for match in round.matches:
-        match_result = MatchResult(match, tournament_players)
-        winner = match_result.select_winner()
-        match_result.add_score()
 
-    tournament.rounds.append(round)
+# view = Menu()
+# view.display_menu()
 
-tournament_result = TournamentResults(tournament)
 
-# print(controller.previous_matches)
-print(tournament.rounds)
-print(tournament_result)
+# tournament_data = json.dumps(tournament.__dict__)
+# with open("tournament.json", "w") as json_file:
+#     json.dump(tournament_data, json_file)

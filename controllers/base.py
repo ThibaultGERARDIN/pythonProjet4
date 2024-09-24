@@ -1,36 +1,17 @@
-"""Liste préliminaire des controlleurs à implémenter."""
+"""Define the main controllers used in the program."""
 
 import random
 from models.players import Player
 from models.matches import Match
-
-# from models.tournament import Tournament
-# from models.rounds import Round
+from models.rounds import Round
 
 
 class Controller:
 
-    def __init__(self, players_list, previous_matches=None):
-        if previous_matches is None:
-            previous_matches = []
+    def __init__(self, tournament):
 
-        self.players_list = players_list
-        self.previous_matches = previous_matches
-
-    def add_players(self):
-        """Add players to list"""
-        tournament_players = []
-        players_list = self.players_list
-        for player in players_list:
-            player_in = Player(
-                player["lastname"],
-                player["firstname"],
-                player["date_of_birth"],
-                player["national_chess_id"],
-                player["score"],
-            )
-            tournament_players.append(player_in)
-        return tournament_players
+        self.players = tournament.players
+        self.previous_matches = tournament.previous_matches
 
     def check_previous_matches(self, player_1, player_2):
         """Verify if match has already been played
@@ -48,12 +29,12 @@ class Controller:
 
         return False
 
-    def draw_matches(self, tournament_players):
-        tournament_players.sort(key=lambda player: player.score, reverse=True)
-        number_of_matches = int(len(tournament_players) / 2)
+    def draw_matches(self):
+        self.players.sort(key=lambda player: player.score, reverse=True)
+        number_of_matches = int(len(self.players) / 2)
         match_list = []
 
-        player_draw_list = tournament_players.copy()
+        player_draw_list = self.players.copy()
 
         for i in range(number_of_matches):
             player_1 = player_draw_list.pop(0)
@@ -79,49 +60,49 @@ class Controller:
         self.previous_matches.extend(match_list)
         return match_list
 
+    def start_tournament(self, tournament):
+        for i in range(tournament.number_of_rounds):
+
+            tournament.current_round = i + 1
+            match_list = self.draw_matches()
+
+            round = Round(match_list, f"Round {i+1}")
+
+            for match in round.matches:
+                match_result = MatchResult(match, tournament)
+                match_result.select_winner()
+                match_result.add_score()
+
+            tournament.rounds.append(round)
+
 
 class CreateTounament:
-    pass
 
+    def __init__(self, players_list):
+        self.players_list = players_list
 
-class TournamentResults:
-    """Give the result at the end of tournament"""
-
-    def __init__(self, tournament):
-        self.tournament = tournament
-        self.ranking = sorted(
-            self.tournament.players,
-            key=lambda player: player.score,
-            reverse=True,
-        )
-        self.winner = self.ranking[0]
-
-    def __str__(self):
-        """Used in print."""
-        return (
-            f"The winner is : {self.winner.name}\n"
-            f"Classement final : {self.ranking}\n"
-        )
-
-    def __repr__(self):
-        """Used in print."""
-        return str(self)
-
-
-class CreateMatch:
-    pass
-
-
-class CreateRound:
-    pass
+    def tournament_players(self):
+        """Add players to list"""
+        tournament_players = []
+        players_list = self.players_list
+        for player in players_list:
+            player_in = Player(
+                player["lastname"],
+                player["firstname"],
+                player["date_of_birth"],
+                player["national_chess_id"],
+                player["score"],
+            )
+            tournament_players.append(player_in)
+        return tournament_players
 
 
 class MatchResult:
 
-    def __init__(self, match, tournament_players):
+    def __init__(self, match, tournament):
         """Initialize the match result with a match and players"""
         self.match = match
-        self.tournament_players = tournament_players
+        self.players = tournament.players
         self.winner = None
 
     def select_winner(self):
@@ -141,7 +122,7 @@ class MatchResult:
         if self.winner is None:
             raise ValueError("Winner must be selected before adding scores.")
 
-        for player in self.tournament_players:
+        for player in self.players:
             if self.winner == player.name:
                 player.score += 1
             elif self.winner == "draw":

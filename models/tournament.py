@@ -26,6 +26,21 @@ class Tournament:
         self.description = description
         self.number_of_rounds = number_of_rounds
         self.current_round = current_round
+        self.previous_matches = []
 
     def finish_tournament(self):
         self.end_date = datetime.now().strftime("%a %d %b %Y")
+
+    def result(self):
+        """Print the result of the tournament"""
+        ranking = sorted(
+            self.players,
+            key=lambda player: player.score,
+            reverse=True,
+        )
+        winner = ranking[0]
+        return (
+            f"Le gagnant est : {winner.lastname}"
+            f" {winner.firstname}\n"
+            f"Classement final :\n{ranking}"
+        )
