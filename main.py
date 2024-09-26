@@ -6,7 +6,7 @@ from controllers.base import (
 )
 from controllers.crud import SaveTournament
 
-players_data = open("./data/players.json")
+players_data = open("./data/test_players.json")
 players_list = json.load(players_data)
 
 
@@ -30,8 +30,10 @@ tournament_result = tournament.result()
 
 saver = SaveTournament(tournament)
 saver.save_state()
+# saver.end_save()
 
 
+# print(tournament.rounds[0].matches[0].pairing)
 # view = Menu()
 # view.display_menu()
 
