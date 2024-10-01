@@ -27,6 +27,7 @@ class SaveTournament:
         self.previous_matches = tournament.previous_matches
 
     def save_state(self):
+        """Save current state of tournament into JSON files"""
         if not os.path.isdir(f"{CURRENT_TOURNAMENT_PATH}"):
             os.makedirs(f"{CURRENT_TOURNAMENT_PATH}")
         tournament_infos = self.static_infos
@@ -63,6 +64,14 @@ class SaveTournament:
             json.dump(tournament_previous_matches, file, indent=4)
 
     def end_save(self):
+        """
+        Save tournament at the end.
+
+        Combine all current tournament files into one
+        Delete current tournament files and folder
+        """
+        if not os.path.isdir(f"{PAST_TOURNAMENT_PATH}"):
+            os.makedirs(f"{PAST_TOURNAMENT_PATH}")
         self.save_state()
         state_files = [
             f"{CURRENT_TOURNAMENT_PATH}static_infos.json",
@@ -84,3 +93,34 @@ class SaveTournament:
         for json_file in os.listdir(f"{CURRENT_TOURNAMENT_PATH}"):
             os.remove(f"{CURRENT_TOURNAMENT_PATH}{json_file}")
         os.rmdir(f"{CURRENT_TOURNAMENT_PATH}")
+
+    def load_state(self):
+        """Load current state from the files, return a dict with all infos"""
+        if os.path.isdir(f"{CURRENT_TOURNAMENT_PATH}"):
+            unfinished_tournament = {}
+            with open(
+                f"{CURRENT_TOURNAMENT_PATH}static_infos.json", "r"
+            ) as file:
+                tournament_infos = json.load(file)
+            with open(
+                f"{CURRENT_TOURNAMENT_PATH}tournament_players.json", "r"
+            ) as file:
+                tournament_players = json.load(file)
+            with open(
+                f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json", "r"
+            ) as file:
+                tournament_rounds = json.load(file)
+            with open(
+                f"{CURRENT_TOURNAMENT_PATH}"
+                "tournament_previous_matches.json", "r"
+            ) as file:
+                tournament_previous_matches = json.load(file)
+            unfinished_tournament["tournament_infos"] = tournament_infos
+            unfinished_tournament["tournament_players"] = tournament_players
+            unfinished_tournament["tournament_rounds"] = tournament_rounds
+            unfinished_tournament[
+                "tournament_previous_matches"
+            ] = tournament_previous_matches
+            return unfinished_tournament
+        else:
+            print("No unfinished tournament found.")

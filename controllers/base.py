@@ -4,6 +4,8 @@ import random
 from models.players import Player
 from models.matches import Match
 from models.rounds import Round
+from models.tournament import Tournament
+from controllers.crud import SaveTournament
 
 
 class Controller:
@@ -12,6 +14,7 @@ class Controller:
 
         self.players = tournament.players
         self.previous_matches = tournament.previous_matches
+        self.saver = SaveTournament(tournament)
 
     def check_previous_matches(self, player_1, player_2):
         """Verify if match has already been played
@@ -65,18 +68,89 @@ class Controller:
 
             tournament.current_round = i + 1
             match_list = self.draw_matches()
+            self.saver.current_round += 1
 
             round = Round(match_list, f"Round {i+1}")
+            tournament.rounds.append(round)
 
             for match in round.matches:
                 match_result = MatchResult(match, tournament)
                 match_result.select_winner()
                 match_result.add_score()
+                self.saver.save_state()
 
-            tournament.rounds.append(round)
+            self.saver.save_state()
 
 
-class CreateTounament:
+class ReloadTounament:
+    """Reacreate tournament from current tournament infos."""
+
+    def __init__(
+        self,
+        players_list,
+        tournament_infos,
+        tournament_rounds,
+        tournament_previous_matches,
+    ):
+        self.players_list = players_list
+        self.infos = tournament_infos
+        self.rounds = tournament_rounds
+        self.previous_matches = tournament_previous_matches
+
+    def get_players(self):
+        tournament_players = AddPlayers(self.players_list).tournament_players()
+        return tournament_players
+
+    def recreate_match(self, list_of_matches):
+        tournament_players = self.get_players()
+        match_list = []
+        for match in list_of_matches:
+            player_1_name = match[0][0]
+            player_2_name = match[1][0]
+            player_1_score = match[0][1]
+            player_2_score = match[1][1]
+            for player in tournament_players:
+                if player_1_name == player.name:
+                    player_1 = player
+                elif player_2_name == player.name:
+                    player_2 = player
+            player_1.score = player_1_score
+            player_2.score = player_2_score
+            match_in = Match(player_1, player_2)
+            match_list.append(match_in)
+        return match_list
+
+    def recreate_tournament(self):
+        tournament_players = self.get_players()
+        name = self.infos["name"]
+        description = self.infos["description"]
+        start_date = self.infos["start_date"]
+        location = self.infos["location"]
+        number_of_rounds = self.infos["number_of_rounds"]
+        current_round = self.infos["current_round"]
+        tournament = Tournament(
+            name,
+            location,
+            tournament_players,
+            description,
+            number_of_rounds,
+            current_round,
+        )
+        tournament.start_date = start_date
+        for round in self.rounds:
+            match_list = self.recreate_match(round["matches"])
+            round_name = round["round_name"]
+            round_start_time = round["start_time"]
+            round_in = Round(match_list, round_name)
+            round_in.start_time = round_start_time
+            tournament.rounds.append(round_in)
+        tournament.previous_matches = self.recreate_match(
+            self.previous_matches
+        )
+        return tournament
+
+
+class AddPlayers:
 
     def __init__(self, players_list):
         self.players_list = players_list
@@ -105,7 +179,7 @@ class MatchResult:
         self.players = tournament.players
         self.winner = None
 
-    def select_winner(self):
+    def test_select_winner(self):
         """Randomly select winner of the match"""
         chosen_winner = random.randint(1, 3)
         if chosen_winner == 1:
@@ -115,6 +189,24 @@ class MatchResult:
         else:
             self.winner = "draw"
 
+        return self.winner
+
+    def select_winner(self):
+        """Randomly select winner of the match"""
+        chosen_winner = int(
+            input(
+                f"Merci d'indiquer le gagnant du match {self.match} :\n"
+                f"1 - {self.match.players[0].name}\n"
+                f"2 - {self.match.players[1].name}\n"
+                f"3 - Match nul\n"
+            )
+        )
+        if chosen_winner == 1:
+            self.winner = self.match.players[0].name
+        elif chosen_winner == 2:
+            self.winner = self.match.players[1].name
+        else:
+            self.winner = "draw"
         return self.winner
 
     def add_score(self):
