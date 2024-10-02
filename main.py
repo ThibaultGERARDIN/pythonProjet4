@@ -1,7 +1,12 @@
 import json
+import os
 from models.tournament import Tournament
 from controllers.base import Controller, ReloadTounament, AddPlayers
-from controllers.crud import SaveTournament
+from controllers.crud import (
+    SaveTournament,
+    LoadTournament,
+    CURRENT_TOURNAMENT_PATH,
+)
 from views.base import Menu
 
 players_data = open("./data/test_players.json")
@@ -18,7 +23,48 @@ location = "test"
 description = "test"
 
 
-tournament = Tournament(name, location, tournament_players, description)
+loader = LoadTournament()
+
+if os.path.isdir(f"{CURRENT_TOURNAMENT_PATH}"):
+    while True:
+        ask_reload = input("Voulez-vous reprendre le tournoi en cours ? (y/n)")
+        if ask_reload == "y":
+            unfinished_tournament = loader.load_state()
+            tournament = ReloadTounament(
+                unfinished_tournament["tournament_players"],
+                unfinished_tournament["tournament_infos"],
+                unfinished_tournament["tournament_rounds"],
+                unfinished_tournament["tournament_previous_matches"],
+            ).recreate_tournament()
+            break
+        elif ask_reload == "n":
+            while True:
+                ask_erase = input(
+                    "Démarrer un nouveau tournoi ecrasera les données"
+                    " du tournoi non terminé, voulez-vous continuer ? (y/n)"
+                )
+                if ask_erase == "y":
+                    tournament = Tournament(
+                        name, location, tournament_players, description
+                    )
+                    break
+                elif ask_erase == "n":
+                    unfinished_tournament = loader.load_state()
+                    tournament = ReloadTounament(
+                        unfinished_tournament["tournament_players"],
+                        unfinished_tournament["tournament_infos"],
+                        unfinished_tournament["tournament_rounds"],
+                        unfinished_tournament["tournament_previous_matches"],
+                    ).recreate_tournament()
+                else:
+                    print("Merci de répondre par y ou n")
+            break
+        else:
+            print("Merci de répondre par y ou n")
+else:
+    tournament = Tournament(name, location, tournament_players, description)
+
+
 controller = Controller(tournament)
 
 
@@ -26,20 +72,8 @@ controller.start_tournament(tournament)
 
 tournament_result = tournament.result()
 
-# saver = SaveTournament(tournament)
-# saver.save_state()
-
-# unfinished_tournament = saver.load_state()
-
-# previous_tournament = ReloadTounament(
-#     unfinished_tournament["tournament_players"],
-#     unfinished_tournament["tournament_infos"],
-#     unfinished_tournament["tournament_rounds"],
-#     unfinished_tournament["tournament_previous_matches"],
-# ).recreate_tournament()
-
 view = Menu()
-# view.display_menu()
+# view.display_menu()i
 
 
 # tournament_data = json.dumps(tournament.__dict__)

@@ -46,11 +46,14 @@ class SaveTournament:
             json.dump(tournament_players, file, indent=4)
         for round in self.rounds:
             round_dict = {}
+            round_dict["round_number"] = round.round_number
             round_dict["round_name"] = round.round_name
             round_dict["start_time"] = round.start_time
             round_dict["matches"] = []
             for match in round.matches:
                 round_dict["matches"].append(match.pairing)
+            round_dict["result"] = round.result
+            round_dict["end_time"] = round.end_time
             tournament_rounds.append(round_dict)
         with open(
             f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json", "w"
@@ -93,6 +96,9 @@ class SaveTournament:
         for json_file in os.listdir(f"{CURRENT_TOURNAMENT_PATH}"):
             os.remove(f"{CURRENT_TOURNAMENT_PATH}{json_file}")
         os.rmdir(f"{CURRENT_TOURNAMENT_PATH}")
+
+
+class LoadTournament:
 
     def load_state(self):
         """Load current state from the files, return a dict with all infos"""

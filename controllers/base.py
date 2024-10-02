@@ -64,22 +64,42 @@ class Controller:
         return match_list
 
     def start_tournament(self, tournament):
-        for i in range(tournament.number_of_rounds):
+        """Start (or restart) the tournament"""
+        if (
+            0 < tournament.current_round <= len(tournament.rounds)
+            and tournament.rounds[tournament.current_round - 1].end_time
+            == "Round en cours"
+        ):
+            unfinished_round = tournament.rounds[tournament.current_round - 1]
+            for i in range(len(unfinished_round.result), 4):
+                match_result = MatchResult(
+                    unfinished_round.matches[i], tournament
+                )
+                match_result.select_winner()
+                match_result.add_score()
+                unfinished_round.record_result(i, match_result.winner)
+                self.saver.save_state()
+            unfinished_round.finish_round()
+            self.saver.save_state()
 
-            tournament.current_round = i + 1
+        for i in range(tournament.current_round, tournament.number_of_rounds):
+            tournament.current_round += 1
+            self.saver.current_round = tournament.current_round
             match_list = self.draw_matches()
-            self.saver.current_round += 1
-
-            round = Round(match_list, f"Round {i+1}")
+            round = Round(match_list, i + 1)
             tournament.rounds.append(round)
-
+            match_index = 0
             for match in round.matches:
+                match_index += 1
                 match_result = MatchResult(match, tournament)
                 match_result.select_winner()
                 match_result.add_score()
+                round.record_result(match_index, match_result.winner)
                 self.saver.save_state()
-
+            round.finish_round()
             self.saver.save_state()
+        print(f"Tournoi terminé ! {tournament.result()}")
+        self.saver.end_save()
 
 
 class ReloadTounament:
@@ -139,10 +159,14 @@ class ReloadTounament:
         tournament.start_date = start_date
         for round in self.rounds:
             match_list = self.recreate_match(round["matches"])
-            round_name = round["round_name"]
+            round_number = round["round_number"]
             round_start_time = round["start_time"]
-            round_in = Round(match_list, round_name)
+            round_result = round["result"]
+            round_end_time = round["end_time"]
+            round_in = Round(match_list, round_number)
             round_in.start_time = round_start_time
+            round_in.result = round_result
+            round_in.end_time = round_end_time
             tournament.rounds.append(round_in)
         tournament.previous_matches = self.recreate_match(
             self.previous_matches
@@ -180,7 +204,7 @@ class MatchResult:
         self.winner = None
 
     def test_select_winner(self):
-        """Randomly select winner of the match"""
+        """Randomly select winner of the match (for testing purposes)"""
         chosen_winner = random.randint(1, 3)
         if chosen_winner == 1:
             self.winner = self.match.players[0].name
@@ -192,21 +216,26 @@ class MatchResult:
         return self.winner
 
     def select_winner(self):
-        """Randomly select winner of the match"""
-        chosen_winner = int(
-            input(
+        """Choose winner of the match"""
+        while True:
+            chosen_winner = input(
                 f"Merci d'indiquer le gagnant du match {self.match} :\n"
                 f"1 - {self.match.players[0].name}\n"
                 f"2 - {self.match.players[1].name}\n"
                 f"3 - Match nul\n"
             )
-        )
-        if chosen_winner == 1:
-            self.winner = self.match.players[0].name
-        elif chosen_winner == 2:
-            self.winner = self.match.players[1].name
-        else:
-            self.winner = "draw"
+
+            if chosen_winner == "1":
+                self.winner = self.match.players[0].name
+                break
+            elif chosen_winner == "2":
+                self.winner = self.match.players[1].name
+                break
+            elif chosen_winner == "3":
+                self.winner = "draw"
+                break
+            else:
+                print("Choix invalide : merci de répondre par 1, 2 ou 3")
         return self.winner
 
     def add_score(self):
