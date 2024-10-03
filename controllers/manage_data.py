@@ -1,7 +1,8 @@
-"""Create Read Update Delete operations controller."""
+"""Controllers to manage data related operations."""
 
 import json
 import os
+import time
 
 CURRENT_TOURNAMENT_PATH = "./data/tournaments/current_tournament/"
 PAST_TOURNAMENT_PATH = "./data/tournaments/past_tournaments/"
@@ -24,7 +25,6 @@ class SaveTournament:
             reverse=True,
         )
         self.current_round = tournament.current_round
-        self.previous_matches = tournament.previous_matches
 
     def save_state(self):
         """Save current state of tournament into JSON files"""
@@ -34,7 +34,6 @@ class SaveTournament:
         tournament_infos["current_round"] = self.current_round
         tournament_players = []
         tournament_rounds = []
-        tournament_previous_matches = []
         with open(f"{CURRENT_TOURNAMENT_PATH}static_infos.json", "w") as file:
             json.dump(tournament_infos, file, indent=4)
 
@@ -59,12 +58,6 @@ class SaveTournament:
             f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json", "w"
         ) as file:
             json.dump(tournament_rounds, file, indent=4)
-        for match in self.previous_matches:
-            tournament_previous_matches.append(match.pairing)
-        with open(
-            f"{CURRENT_TOURNAMENT_PATH}tournament_previous_matches.json", "w"
-        ) as file:
-            json.dump(tournament_previous_matches, file, indent=4)
 
     def end_save(self):
         """
@@ -86,12 +79,13 @@ class SaveTournament:
             with open(file, "r") as f:
                 files_to_save.append(json.load(f))
         end_file = {}
-        end_file['static_infos'] = files_to_save[0]
-        end_file['tournament_players'] = files_to_save[1]
-        end_file['tournament_rounds'] = files_to_save[2]
-        with open(
-            f"{PAST_TOURNAMENT_PATH}{self.static_infos["name"]}.json", "w"
-        ) as file:
+        end_file["static_infos"] = files_to_save[0]
+        end_file["tournament_players"] = files_to_save[1]
+        end_file["tournament_rounds"] = files_to_save[2]
+        end_save_name = self.static_infos["name"] + time.strftime(
+            "%Y%m%d-%H%M%S"
+        )
+        with open(f"{PAST_TOURNAMENT_PATH}{end_save_name}.json", "w") as file:
             json.dump(end_file, file, indent=4)
         for json_file in os.listdir(f"{CURRENT_TOURNAMENT_PATH}"):
             os.remove(f"{CURRENT_TOURNAMENT_PATH}{json_file}")
@@ -116,17 +110,10 @@ class LoadTournament:
                 f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json", "r"
             ) as file:
                 tournament_rounds = json.load(file)
-            with open(
-                f"{CURRENT_TOURNAMENT_PATH}"
-                "tournament_previous_matches.json", "r"
-            ) as file:
-                tournament_previous_matches = json.load(file)
             unfinished_tournament["tournament_infos"] = tournament_infos
             unfinished_tournament["tournament_players"] = tournament_players
             unfinished_tournament["tournament_rounds"] = tournament_rounds
-            unfinished_tournament[
-                "tournament_previous_matches"
-            ] = tournament_previous_matches
+
             return unfinished_tournament
         else:
             print("No unfinished tournament found.")

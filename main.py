@@ -1,12 +1,13 @@
 import json
 import os
 from models.tournament import Tournament
-from controllers.base import Controller, ReloadTounament, AddPlayers
-from controllers.crud import (
-    SaveTournament,
+from controllers.base import Controller
+from controllers.manage_data import (
     LoadTournament,
     CURRENT_TOURNAMENT_PATH,
 )
+from controllers.manage_players import AddPlayers
+from controllers.manage_tournaments import ReloadTounament
 from views.base import Menu
 
 players_data = open("./data/test_players.json")
@@ -22,6 +23,11 @@ name = "test"
 location = "test"
 description = "test"
 
+# new_player = CreatePlayer()
+
+# new_player.new_player()
+# new_player.new_player()
+
 
 loader = LoadTournament()
 
@@ -34,7 +40,6 @@ if os.path.isdir(f"{CURRENT_TOURNAMENT_PATH}"):
                 unfinished_tournament["tournament_players"],
                 unfinished_tournament["tournament_infos"],
                 unfinished_tournament["tournament_rounds"],
-                unfinished_tournament["tournament_previous_matches"],
             ).recreate_tournament()
             break
         elif ask_reload == "n":
@@ -54,8 +59,8 @@ if os.path.isdir(f"{CURRENT_TOURNAMENT_PATH}"):
                         unfinished_tournament["tournament_players"],
                         unfinished_tournament["tournament_infos"],
                         unfinished_tournament["tournament_rounds"],
-                        unfinished_tournament["tournament_previous_matches"],
                     ).recreate_tournament()
+                    break
                 else:
                     print("Merci de répondre par y ou n")
             break
@@ -66,7 +71,6 @@ else:
 
 
 controller = Controller(tournament)
-
 
 controller.start_tournament(tournament)
 
