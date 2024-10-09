@@ -30,7 +30,7 @@ class Player:
             )
         else:
             print(f"{date_of_birth} : Incorrect date format")
-        self.national_chess_id = national_chess_id
+        self.national_chess_id = national_chess_id.upper()
         self.score = 0
         self.lastname = lastname
         self.firstname = firstname

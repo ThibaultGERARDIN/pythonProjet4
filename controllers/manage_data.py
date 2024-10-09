@@ -1,14 +1,14 @@
 """Controllers to manage data related operations."""
 
-import json
 import os
 import time
+from helpers.helpers import Helper
 
 CURRENT_TOURNAMENT_PATH = "./data/tournaments/current_tournament/"
 PAST_TOURNAMENT_PATH = "./data/tournaments/past_tournaments/"
 
 
-class SaveTournament:
+class SaveData:
     """Save current tournament data in JSON files."""
 
     def __init__(self, tournament):
@@ -28,21 +28,22 @@ class SaveTournament:
 
     def save_state(self):
         """Save current state of tournament into JSON files"""
-        if not os.path.isdir(f"{CURRENT_TOURNAMENT_PATH}"):
-            os.makedirs(f"{CURRENT_TOURNAMENT_PATH}")
+        helper = Helper()
+        if not os.path.isdir(CURRENT_TOURNAMENT_PATH):
+            os.makedirs(CURRENT_TOURNAMENT_PATH)
         tournament_infos = self.static_infos
         tournament_infos["current_round"] = self.current_round
         tournament_players = []
         tournament_rounds = []
-        with open(f"{CURRENT_TOURNAMENT_PATH}static_infos.json", "w") as file:
-            json.dump(tournament_infos, file, indent=4)
-
+        helper.save_file(
+            f"{CURRENT_TOURNAMENT_PATH}static_infos.json", tournament_infos
+        )
         for player in self.players:
             tournament_players.append(player.__dict__)
-        with open(
-            f"{CURRENT_TOURNAMENT_PATH}tournament_players.json", "w"
-        ) as file:
-            json.dump(tournament_players, file, indent=4)
+        helper.save_file(
+            f"{CURRENT_TOURNAMENT_PATH}tournament_players.json",
+            tournament_players,
+        )
         for round in self.rounds:
             round_dict = {}
             round_dict["round_number"] = round.round_number
@@ -54,10 +55,10 @@ class SaveTournament:
             round_dict["result"] = round.result
             round_dict["end_time"] = round.end_time
             tournament_rounds.append(round_dict)
-        with open(
-            f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json", "w"
-        ) as file:
-            json.dump(tournament_rounds, file, indent=4)
+        helper.save_file(
+            f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json",
+            tournament_rounds,
+        )
 
     def end_save(self):
         """
@@ -66,8 +67,9 @@ class SaveTournament:
         Combine all current tournament files into one
         Delete current tournament files and folder
         """
-        if not os.path.isdir(f"{PAST_TOURNAMENT_PATH}"):
-            os.makedirs(f"{PAST_TOURNAMENT_PATH}")
+        helper = Helper()
+        if not os.path.isdir(PAST_TOURNAMENT_PATH):
+            os.makedirs(PAST_TOURNAMENT_PATH)
         self.save_state()
         state_files = [
             f"{CURRENT_TOURNAMENT_PATH}static_infos.json",
@@ -76,8 +78,7 @@ class SaveTournament:
         ]
         files_to_save = []
         for file in state_files:
-            with open(file, "r") as f:
-                files_to_save.append(json.load(f))
+            files_to_save.append(helper.load_file(file))
         end_file = {}
         end_file["static_infos"] = files_to_save[0]
         end_file["tournament_players"] = files_to_save[1]
@@ -85,35 +86,30 @@ class SaveTournament:
         end_save_name = self.static_infos["name"] + time.strftime(
             "%Y%m%d-%H%M%S"
         )
-        with open(f"{PAST_TOURNAMENT_PATH}{end_save_name}.json", "w") as file:
-            json.dump(end_file, file, indent=4)
-        for json_file in os.listdir(f"{CURRENT_TOURNAMENT_PATH}"):
+        helper.save_file(
+            f"{PAST_TOURNAMENT_PATH}{end_save_name}.json", end_file
+        )
+        for json_file in os.listdir(CURRENT_TOURNAMENT_PATH):
             os.remove(f"{CURRENT_TOURNAMENT_PATH}{json_file}")
-        os.rmdir(f"{CURRENT_TOURNAMENT_PATH}")
+        os.rmdir(CURRENT_TOURNAMENT_PATH)
 
 
-class LoadTournament:
+class LoadData:
 
     def load_state(self):
         """Load current state from the files, return a dict with all infos"""
-        if os.path.isdir(f"{CURRENT_TOURNAMENT_PATH}"):
+        helper = Helper()
+        if os.path.isdir(CURRENT_TOURNAMENT_PATH):
             unfinished_tournament = {}
-            with open(
-                f"{CURRENT_TOURNAMENT_PATH}static_infos.json", "r"
-            ) as file:
-                tournament_infos = json.load(file)
-            with open(
-                f"{CURRENT_TOURNAMENT_PATH}tournament_players.json", "r"
-            ) as file:
-                tournament_players = json.load(file)
-            with open(
-                f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json", "r"
-            ) as file:
-                tournament_rounds = json.load(file)
-            unfinished_tournament["tournament_infos"] = tournament_infos
-            unfinished_tournament["tournament_players"] = tournament_players
-            unfinished_tournament["tournament_rounds"] = tournament_rounds
-
+            unfinished_tournament["tournament_infos"] = helper.load_file(
+                f"{CURRENT_TOURNAMENT_PATH}static_infos.json"
+            )
+            unfinished_tournament["tournament_players"] = helper.load_file(
+                f"{CURRENT_TOURNAMENT_PATH}tournament_players.json"
+            )
+            unfinished_tournament["tournament_rounds"] = helper.load_file(
+                f"{CURRENT_TOURNAMENT_PATH}tournament_rounds.json"
+            )
             return unfinished_tournament
         else:
             print("No unfinished tournament found.")

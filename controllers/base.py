@@ -2,20 +2,20 @@
 
 from models.matches import Match
 from models.rounds import Round
-from controllers.manage_data import SaveTournament
+from controllers.manage_data import SaveData
 from controllers.manage_matches import MatchResult
 
 
 class Controller:
 
     def __init__(self, tournament):
-
+        self.tournament = tournament
         self.players = tournament.players
         self.previous_matches = []
         for round in tournament.rounds:
             for match in round.matches:
                 self.previous_matches.append(match)
-        self.saver = SaveTournament(tournament)
+        self.saver = SaveData(tournament)
 
     def check_previous_matches(self, player_1, player_2):
         """Verify if match has already been played
@@ -23,11 +23,15 @@ class Controller:
 
         for match in self.previous_matches:
             if (
-                match.players[0].name == player_1.name
-                and match.players[1].name == player_2.name
+                match.players[0].national_chess_id
+                == player_1.national_chess_id
+                and match.players[1].national_chess_id
+                == player_2.national_chess_id
             ) or (
-                match.players[0].name == player_2.name
-                and match.players[1].name == player_1.name
+                match.players[0].national_chess_id
+                == player_2.national_chess_id
+                and match.players[1].national_chess_id
+                == player_1.national_chess_id
             ):
                 return True
 
@@ -63,8 +67,9 @@ class Controller:
         self.previous_matches.extend(match_list)
         return match_list
 
-    def start_tournament(self, tournament):
+    def start_tournament(self):
         """Start (or restart) the tournament"""
+        tournament = self.tournament
         if (
             0 < tournament.current_round <= len(tournament.rounds)
             and tournament.rounds[tournament.current_round - 1].end_time

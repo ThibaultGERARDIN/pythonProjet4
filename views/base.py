@@ -1,21 +1,19 @@
 """Main view"""
 
+from .player_menu import PlayerMenu
+from .tournament_menu import TournamentMenu
 
-class Menu:
+
+class View:
 
     def __init__(self):
         self.main_menu = (
-            "Menu principal\n" "1 - Menu joueurs\n2 - Menu tournois"
+            "Menu principal\n"
+            "1 - Menu joueurs\n2 - Menu tournois\n"
+            "0 - Quitter le programme\n"
         )
-        self.player_menu = (
-            "Menu joueurs\n"
-            "1 - Ajouter un joueur\n2 - Afficher la liste\n0 - Retour"
-        )
-        self.tournament_menu = (
-            "Menu tournois\n"
-            "1 - Liste des tournois\n2 - Créer nouveau tournoi\n"
-            "3 - Continuer tournoi\n4 - Commencer tournoi\n0 - Retour"
-        )
+        self.player_menu = PlayerMenu().player_main_menu
+        self.tournament_menu = TournamentMenu().menu
         self.selected_menu = 0
         self.display = True
 
@@ -31,7 +29,11 @@ class Menu:
                 print(self.tournament_menu)
                 self.navigate_menus()
             else:
-                self.display = False
+                print(
+                    "Ce menu n'existe pas ! Merci de choisir"
+                    " parmis les numéros disponibles."
+                )
+                self.navigate_menus()
 
     def navigate_menus(self):
         self.selected_menu = int(input("Tapez le numéro du menu souhaité :"))
