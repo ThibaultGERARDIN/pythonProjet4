@@ -1,39 +1,34 @@
 """Main view"""
 
-from .player_menu import PlayerMenu
-from .tournament_menu import TournamentMenu
-
 
 class View:
 
     def __init__(self):
         self.main_menu = (
             "Menu principal\n"
-            "1 - Menu joueurs\n2 - Menu tournois\n"
+            "1 - Menu joueurs\n"
+            "2 - Menu tournois\n"
             "0 - Quitter le programme\n"
         )
-        self.player_menu = PlayerMenu().player_main_menu
-        self.tournament_menu = TournamentMenu().menu
-        self.selected_menu = 0
-        self.display = True
 
-    def display_menu(self):
-        while self.display:
-            if self.selected_menu == 0:
-                print(self.main_menu)
-                self.navigate_menus()
-            elif self.selected_menu == 1:
-                print(self.player_menu)
-                self.navigate_menus()
-            elif self.selected_menu == 2:
-                print(self.tournament_menu)
-                self.navigate_menus()
-            else:
-                print(
-                    "Ce menu n'existe pas ! Merci de choisir"
-                    " parmis les numéros disponibles."
-                )
-                self.navigate_menus()
+    def display_main_menu(self):
+        print(self.main_menu)
 
-    def navigate_menus(self):
-        self.selected_menu = int(input("Tapez le numéro du menu souhaité :"))
+    def navigate_main_menu(self):
+        selected_menu = input("Tapez le numéro du menu souhaité :")
+        while (
+            not selected_menu == "1"
+            and not selected_menu == "2"
+            and not selected_menu == "0"
+        ):
+            selected_menu = input(
+                "Choix invalide, merci de choisir parmis"
+                " les numéros possibles :"
+            )
+        return selected_menu
+
+    def ask_y_n(self, message):
+        answer = input(f"{message} (y/n) :")
+        while not answer == "y" and not answer == "n":
+            answer = input("Merci de répondre y ou n.")
+        return answer

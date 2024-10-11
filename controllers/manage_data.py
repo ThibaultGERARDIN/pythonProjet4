@@ -51,7 +51,7 @@ class SaveData:
             round_dict["start_time"] = round.start_time
             round_dict["matches"] = []
             for match in round.matches:
-                round_dict["matches"].append(match.pairing)
+                round_dict["matches"].append(match.save_pairing)
             round_dict["result"] = round.result
             round_dict["end_time"] = round.end_time
             tournament_rounds.append(round_dict)
@@ -83,9 +83,19 @@ class SaveData:
         end_file["static_infos"] = files_to_save[0]
         end_file["tournament_players"] = files_to_save[1]
         end_file["tournament_rounds"] = files_to_save[2]
-        end_save_name = self.static_infos["name"] + time.strftime(
-            "%Y%m%d-%H%M%S"
-        )
+        if (
+            end_file["static_infos"]["current_round"]
+            < end_file["static_infos"]["number_of_rounds"]
+        ):
+            end_save_name = (
+                self.static_infos["name"]
+                + "ANNULE"
+                + time.strftime("%Y%m%d-%H%M%S")
+            )
+        else:
+            end_save_name = self.static_infos["name"] + time.strftime(
+                "%Y%m%d-%H%M%S"
+            )
         helper.save_file(
             f"{PAST_TOURNAMENT_PATH}{end_save_name}.json", end_file
         )

@@ -6,9 +6,11 @@ from models.tournament import Tournament
 from models.matches import Match
 from models.rounds import Round
 from controllers.manage_players import ManagePlayers
-from controllers.base import Controller
 from controllers.manage_data import SaveData
+from controllers.manage_matches import MatchResult, MatchDraw
 from views.player_menu import PlayerMenu
+from views.tournament_menu import TournamentMenu
+from views.base import View
 
 
 class ReloadTounament:
@@ -35,14 +37,14 @@ class ReloadTounament:
         tournament_players = self.get_players()
         match_list = []
         for match in list_of_matches:
-            player_1_name = match[0][0]
-            player_2_name = match[1][0]
-            player_1_score = match[0][1]
-            player_2_score = match[1][1]
+            player_1_INE = match[0][1]
+            player_2_INE = match[1][1]
+            player_1_score = match[0][2]
+            player_2_score = match[1][2]
             for player in tournament_players:
-                if player_1_name == player.name:
+                if player_1_INE == player.national_chess_id:
                     player_1 = player
-                elif player_2_name == player.name:
+                elif player_2_INE == player.national_chess_id:
                     player_2 = player
             player_1.score = player_1_score
             player_2.score = player_2_score
@@ -85,92 +87,174 @@ class CreateTournament:
     """Create new tournament."""
 
     def __init__(self):
+        self.base_view = View()
         self.player_menu = PlayerMenu()
+        self.tournament_menu = TournamentMenu()
         self.manage_players = ManagePlayers()
-        self.tournament_name = input("Nom du tournoi :")
-        self.tournament_location = input("Lieu du tournoi :")
-        self.tournament_description = input("Description :")
+        self.tournament_infos = self.tournament_menu.tournament_infos_prompt()
         self.tournament_players = self.select_players()
 
     def select_players(self):
         tournament_players = []
+        number_of_players = self.tournament_infos["number_of_rounds"] * 2
         while True:
             source_choice = self.player_menu.player_selection_prompt()
             if source_choice == "1":
-                with open("./data/players.json", "r") as file:
+                if len(tournament_players) < number_of_players:
+                    with open("./data/players.json", "r") as file:
+                        try:
+                            players_list = json.load(file)
+                        except ValueError:
+                            print("Erreur : liste de joueurs inexistante.")
+                            pass
+                    self.player_menu.display_choice_list(players_list)
+                    player_choice = self.player_menu.player_choice_add_prompt()
+                    selected_indexes = re.split(r",|\.| ", player_choice)
                     try:
-                        players_list = json.load(file)
+                        selected_indexes.remove("")
                     except ValueError:
-                        print("Erreur : liste de joueurs inexistante.")
                         pass
-                self.player_menu.display_choice_list(players_list)
-                player_choice = self.player_menu.player_choice_add_prompt()
-                selected_indexes = re.split(r",|\.| ", player_choice)
-                try:
-                    selected_indexes.remove('')
-                except ValueError:
-                    pass
-                for index in selected_indexes:
-                    if int(index) <= len(players_list):
-                        player = players_list[int(index)]
-                        if player in tournament_players:
-                            print(
-                                f"Le joueur {player["name"]}"
-                                " est déjà inscrit"
-                            )
+                    for index in selected_indexes:
+                        if int(index) <= len(players_list):
+                            player = players_list[int(index)]
+                            if player in tournament_players:
+                                self.player_menu.player_already_in(
+                                    player["name"]
+                                )
+                            else:
+                                if len(tournament_players) < number_of_players:
+                                    tournament_players.append(player)
+                                    self.player_menu.player_added(
+                                        player["name"]
+                                    )
+                                else:
+                                    self.player_menu.too_many_players(
+                                        number_of_players, player["name"]
+                                    )
                         else:
-                            tournament_players.append(player)
-                            print(
-                                f"Le joueur {player["name"]}"
-                                " a été ajouté au tournoi."
-                            )
-                    else:
-                        print(f"Choix {index} invalide.")
+                            print(f"Choix {index} invalide.")
+                else:
+                    self.player_menu.too_many_players(number_of_players)
             elif source_choice == "2":
                 new_player = self.manage_players.new_player()
                 while not new_player:
                     new_player = self.manage_players.new_player()
-                tournament_players.append(new_player.__dict__)
-                print(
-                    f"Le joueur {new_player.__dict__["name"]}"
-                    " a été ajouté au tournoi."
-                )
+                if len(tournament_players) < number_of_players:
+                    tournament_players.append(player)
+                    self.player_menu.player_added(new_player.name)
+                else:
+                    self.player_menu.too_many_players(
+                        number_of_players, new_player.name
+                    )
             elif source_choice == "3":
+                self.player_menu.number_selected(
+                    len(tournament_players), number_of_players
+                )
                 self.player_menu.display_choice_list(tournament_players)
             elif source_choice == "4":
                 self.player_menu.display_choice_list(tournament_players)
-                validate = input(
-                    "Validez-vous la liste ci-dessus pour"
-                    " la création du tournoi ? (y/n)"
-                )
-                if validate == "y":
-                    self.tournament_players = (
-                        self.manage_players.tournament_players(
-                            tournament_players
+                if len(tournament_players) == number_of_players:
+                    validate = self.base_view.ask_y_n(
+                        "Validez-vous la liste ci-dessus pour"
+                        " la création du tournoi ?"
+                    )
+                    if validate == "y":
+                        self.tournament_players = (
+                            self.manage_players.tournament_players(
+                                tournament_players
+                            )
                         )
+                        tournament = Tournament(
+                            self.tournament_infos["name"],
+                            self.tournament_infos["location"],
+                            self.tournament_players,
+                            self.tournament_infos["description"],
+                            self.tournament_infos["number_of_rounds"],
+                        )
+                        ask_start = self.base_view.ask_y_n(
+                            "Tournoi créé ! Voulez-vous le lancer ?"
+                        )
+                        if ask_start == "y":
+                            PlayTournament(tournament).start_tournament()
+                            break
+                        else:
+                            SaveData(tournament).save_state()
+                            break
+                    else:
+                        print("Retour au choix des participants")
+                        source_choice = (
+                            self.player_menu.player_selection_prompt()
+                        )
+                else:
+                    self.player_menu.number_selected(
+                        len(tournament_players), number_of_players
                     )
-                    tournament = Tournament(
-                        self.tournament_name,
-                        self.tournament_location,
-                        self.tournament_players,
-                        self.tournament_description,
-                    )
-                    ask_start = input(
-                        "Tournoi créé ! Voulez-vous"
-                        " le lancer ?(y/n)"
-                    )
-                    if ask_start == "y":
-                        controller = Controller(tournament)
-                        controller.start_tournament()
-                        break
-                    elif ask_start == "n":
-                        saver = SaveData(tournament)
-                        saver.save_state()
-                        break
-                elif validate == "n":
-                    print("Retour au choix des participants")
-                    source_choice = self.player_menu.player_selection_prompt()
             elif source_choice == "0":
                 break
             else:
                 source_choice = input("Choix invalide, veuillez réessayer.")
+
+
+class PlayTournament:
+
+    def __init__(self, tournament):
+        self.view = TournamentMenu()
+        self.base_view = View()
+        self.tournament = tournament
+        self.players = tournament.players
+        self.previous_matches = []
+        for round in tournament.rounds:
+            for match in round.matches:
+                self.previous_matches.append(match)
+        self.saver = SaveData(tournament)
+        self.match_draws = MatchDraw()
+
+    def start_tournament(self):
+        """Start (or restart) the tournament"""
+        tournament = self.tournament
+        self.saver.save_state()
+        if (
+            0 < tournament.current_round <= len(tournament.rounds)
+            and tournament.rounds[tournament.current_round - 1].end_time
+            == "Round en cours"
+        ):
+            unfinished_round = tournament.rounds[tournament.current_round - 1]
+            self.view.display_unfinished_round_matches(unfinished_round)
+            for i in range(len(unfinished_round.result), 4):
+                match_result = MatchResult(
+                    unfinished_round.matches[i], tournament
+                )
+                match_result.select_winner()
+                match_result.add_score()
+                unfinished_round.record_result(i, match_result.winner)
+                self.saver.save_state()
+            unfinished_round.finish_round()
+            self.view.round_end(unfinished_round.round_name)
+            self.saver.save_state()
+
+        for i in range(tournament.current_round, tournament.number_of_rounds):
+            tournament.current_round += 1
+            self.saver.current_round = tournament.current_round
+            match_list = self.match_draws.draw_matches(
+                self.players, self.previous_matches
+            )
+            round = Round(match_list, i + 1)
+            tournament.rounds.append(round)
+            self.view.display_round_matches(round)
+            match_index = 0
+            for match in round.matches:
+                match_index += 1
+                match_result = MatchResult(match, tournament)
+                match_result.select_winner()
+                match_result.add_score()
+                round.record_result(match_index, match_result.winner)
+                self.saver.save_state()
+            round.finish_round()
+            self.saver.save_state()
+            next_round = self.base_view.ask_y_n(
+                f"{self.view.round_end(round.round_name)}"
+            )
+            if next_round == "n":
+                self.base_view.display_main_menu()
+        self.view.tournament_end(tournament.result())
+        self.saver.end_save()

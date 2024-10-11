@@ -76,6 +76,7 @@ class ManagePlayers:
                         players_found.append(player)
                 if len(players_found) == 0:
                     print(f"Pas de joueur {player_name} dans la liste.")
+                self.view.display_complete_list(players_found)
                 break
             elif search_by == "2":
                 player_ine = self.view.search_ine_prompt()
@@ -84,9 +85,10 @@ class ManagePlayers:
                         players_found.append(player)
                 if len(players_found) == 0:
                     print(f"Pas de joueur {player_ine} dans la liste.")
+                self.view.display_complete_list(players_found)
                 break
             elif search_by == "0":
-                break
+                self.view.display_main_menu()
             else:
                 search_by = input("Choix invalide, veuillez réessayer.")
         if len(players_found) > 0:
@@ -105,8 +107,16 @@ class ManagePlayers:
             updated_player_data["date_of_birth"],
             updated_player_data["national_chess_id"],
         )
-        players_list[index] = updated_player.__dict__
-        self.helper.save_file(PLAYER_DATA_PATH, players_list)
+        confirm_update = self.view.confirm_player_update(
+            player_to_update, updated_player_data
+        )
+        print(confirm_update)
+        if confirm_update == "y":
+            players_list[index] = updated_player.__dict__
+            self.helper.save_file(PLAYER_DATA_PATH, players_list)
+            print("Modification enregistrée.")
+        else:
+            print("Modification annulée.")
 
     def select_player_to_update(self):
         players_found = self.search_player()

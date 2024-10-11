@@ -12,6 +12,10 @@ class Match:
             [player_1.name, player_1.score],
             [player_2.name, player_2.score],
         )
+        self.save_pairing = (
+            [player_1.name, player_1.national_chess_id, player_1.score],
+            [player_2.name, player_2.national_chess_id, player_2.score],
+        )
 
     def __str__(self):
         """Used in print."""
