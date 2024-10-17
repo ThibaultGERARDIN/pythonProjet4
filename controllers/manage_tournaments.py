@@ -1,6 +1,7 @@
 """Controllers to manage tournament related operations."""
 
 import json
+import random
 from models.tournament import Tournament
 from models.matches import Match
 from models.rounds import Round
@@ -255,6 +256,8 @@ class PlayTournament:
             unfinished_round.finish_round()
             self.view.round_end(unfinished_round.round_name)
             self.saver.save_state()
+        if tournament.current_round == 0:
+            random.shuffle(self.players)
         for i in range(tournament.current_round, tournament.number_of_rounds):
             tournament.current_round += 1
             self.saver.current_round = tournament.current_round
