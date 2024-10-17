@@ -1,3 +1,5 @@
 .venv/
 *.json
 !test_players.json
+!test20241016-172141.json
+__pycache__/

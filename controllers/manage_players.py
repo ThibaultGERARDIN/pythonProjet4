@@ -10,9 +10,17 @@ PLAYER_DATA_PATH = "./data/players.json"
 
 
 class ManagePlayers:
-    """Utilities to manage players"""
+    """
+    All player related methods.
+
+    Create list of Player objects for tournament
+    Add new player to database
+    Search player in database
+    Update player info in database.
+    """
 
     def __init__(self):
+        """Verify that players.json files exists."""
         if not os.path.isfile(PLAYER_DATA_PATH):
             with open(PLAYER_DATA_PATH, "w") as file:
                 json.dump([], file, indent=4)
@@ -20,7 +28,11 @@ class ManagePlayers:
         self.helper = Helper()
 
     def tournament_players(self, players_list):
-        """Add players to list"""
+        """
+        Create Player objects list from player data list.
+
+        Return Player list to initialize tournament.
+        """
         tournament_players = []
         for player in players_list:
             player_in = Player(
@@ -34,10 +46,17 @@ class ManagePlayers:
         return tournament_players
 
     def new_player(self):
+        """
+        Create new player from input data.
+
+        Check if already in DB (from INE)
+        Save it to database.
+        Return player data to be used in other methods.
+        """
         player_list = []
         new_player_data = self.view.create_player_prompt()
-        lastname = new_player_data["lastname"]
-        firstname = new_player_data["firstname"]
+        lastname = new_player_data["lastname"].upper()
+        firstname = new_player_data["firstname"].capitalize()
         date_of_birth = new_player_data["date_of_birth"]
         national_chess_id = new_player_data["national_chess_id"]
         player = Player(lastname, firstname, date_of_birth, national_chess_id)
@@ -52,58 +71,68 @@ class ManagePlayers:
             ):
                 player_list.append(player.__dict__)
                 self.helper.save_file(PLAYER_DATA_PATH, player_list)
-                print(
-                    f"Le joueur {player.name} a bien"
-                    " été ajouté à la base de données."
-                )
+                self.view.added_in_database(player.name)
                 return player
             else:
-                print(
-                    f"Un joueur avec l'INE {player.national_chess_id}"
-                    " est déjà dans la liste, veuillez réessayer."
-                )
+                self.view.already_in_database(player.national_chess_id)
                 return None
 
     def search_player(self):
-        players_found = []
+        """
+        Search player in DB from name or INE.
+
+        Choose search method
+        Input name or INE
+        Return list of matching players.
+        """
         players_list = self.helper.load_file(PLAYER_DATA_PATH)
         while True:
             search_by = self.view.search_player_prompt()
             if search_by == "1":
-                player_name = self.view.search_name_prompt()
-                for player in players_list:
-                    if player_name.upper() == player["lastname"].upper():
-                        players_found.append(player)
-                if len(players_found) == 0:
-                    print(f"Pas de joueur {player_name} dans la liste.")
-                self.view.display_complete_list(players_found)
+                players_found = self.search_by_name(players_list)
                 break
             elif search_by == "2":
-                player_ine = self.view.search_ine_prompt()
-                for player in players_list:
-                    if player_ine.upper() == player["national_chess_id"]:
-                        players_found.append(player)
-                if len(players_found) == 0:
-                    print(f"Pas de joueur {player_ine} dans la liste.")
-                self.view.display_complete_list(players_found)
+                players_found = self.search_by_ine(players_list)
                 break
-            elif search_by == "0":
-                self.view.display_main_menu()
             else:
-                search_by = input("Choix invalide, veuillez réessayer.")
+                self.view.display_main_menu()
+                break
         if len(players_found) > 0:
             return players_found
         else:
-            print("Aucun joueur trouvé, veuillez le rajouter.")
+            self.view.player_not_in()
             return None
 
+    def search_by_name(self, players_list):
+        players_found = []
+        player_name = self.view.search_name_prompt()
+        for player in players_list:
+            if player_name.upper() == player["lastname"].upper():
+                players_found.append(player)
+        if len(players_found) == 0:
+            print(f"Pas de joueur {player_name} dans la liste.")
+        self.view.display_complete_list(players_found)
+        return players_found
+
+    def search_by_ine(self, players_list):
+        players_found = []
+        player_ine = self.view.search_ine_prompt()
+        for player in players_list:
+            if player_ine == player["national_chess_id"]:
+                players_found.append(player)
+        if len(players_found) == 0:
+            print(f"Pas de joueur {player_ine} dans la liste.")
+        self.view.display_complete_list(players_found)
+        return players_found
+
     def update_player(self, player_to_update: dict):
+        """Update player data from given dict data."""
         players_list = self.helper.load_file(PLAYER_DATA_PATH)
         index = players_list.index(player_to_update)
         updated_player_data = self.view.update_player_prompt(player_to_update)
         updated_player = Player(
-            updated_player_data["lastname"],
-            updated_player_data["firstname"],
+            updated_player_data["lastname"].upper(),
+            updated_player_data["firstname"].capitalize(),
             updated_player_data["date_of_birth"],
             updated_player_data["national_chess_id"],
         )
@@ -119,11 +148,18 @@ class ManagePlayers:
             print("Modification annulée.")
 
     def select_player_to_update(self):
+        """Return single player to update from search."""
         players_found = self.search_player()
-        if players_found and len(players_found) > 1:
-            self.view.display_choice_list(players_found)
-            player_choice = int(self.view.player_choice_update_prompt())
-            player_to_update = players_found[player_choice]
+        if players_found:
+            if len(players_found) > 1:
+                self.view.display_choice_list(players_found)
+                player_choice = self.view.player_choice_update_prompt(
+                    players_found
+                )
+                player_to_update = players_found[player_choice]
+                return player_to_update
+            else:
+                player_to_update = players_found[0]
+                return player_to_update
         else:
-            player_to_update = players_found[0]
-        return player_to_update
+            return None

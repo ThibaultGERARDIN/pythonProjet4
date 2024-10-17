@@ -12,9 +12,15 @@ YYYY_MM_DD = re.compile(
 
 
 class Player:
-    """Player."""
+    """Define the Player object."""
 
     def __init__(self, lastname, firstname, date_of_birth, national_chess_id):
+        """
+        Instanciate new Player object from given data.
+
+        Check and treansform date format.
+        Transform INE and names format.
+        """
         self.name = lastname + firstname
         if DD_MM_YYYY.match(date_of_birth):
             birthday = re.sub("/", "-", date_of_birth)
@@ -32,15 +38,16 @@ class Player:
             print(f"{date_of_birth} : Incorrect date format")
         self.national_chess_id = national_chess_id.upper()
         self.score = 0
-        self.lastname = lastname
-        self.firstname = firstname
+        self.lastname = lastname.upper()
+        self.firstname = firstname.capitalize()
 
     def __str__(self):
-        """Used in print."""
+        """Define the print version of the object."""
         return (
             f"Nom : {self.lastname} Prénom : {self.firstname}\n"
             f"Date de naissance : {self.date_of_birth}\n"
-            f"N°INE : {self.national_chess_id}\nScore : {self.score}\n"
+            f"N°INE : {self.national_chess_id}\n"
+            f"Score : {self.score}\n"
         )
 
     def __repr__(self):

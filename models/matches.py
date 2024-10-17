@@ -4,9 +4,10 @@ from .players import Player
 
 
 class Match:
-    """Match."""
+    """Define the Match object."""
 
     def __init__(self, player_1: Player, player_2: Player):
+        """Instanciate a new Match from two Player objects."""
         self.players = [player_1, player_2]
         self.pairing = (
             [player_1.name, player_1.score],
