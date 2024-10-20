@@ -144,7 +144,10 @@ class TournamentMenu:
             i = 0
             for file in tournament_files_list:
                 i += 1
-                print(f"{i} : {file}")
+                print(
+                    f"{i} [Nom : {file["name"]},"
+                    f" Date de fin : {file["end_time"]}]"
+                )
             chosen_file = input(
                 "Choisissez un tournoi à afficher en détail"
                 " (0 pour retour au menu):"

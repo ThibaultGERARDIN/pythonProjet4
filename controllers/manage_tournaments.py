@@ -73,17 +73,18 @@ class ReloadTounament:
             current_round,
         )
         tournament.start_date = start_date
-        for round in self.rounds:
-            match_list = self.recreate_match(round["matches"])
-            round_number = round["round_number"]
-            round_start_time = round["start_time"]
-            round_result = round["result"]
-            round_end_time = round["end_time"]
-            round_in = Round(match_list, round_number)
-            round_in.start_time = round_start_time
-            round_in.result = round_result
-            round_in.end_time = round_end_time
-            tournament.rounds.append(round_in)
+        if self.rounds:
+            for round in self.rounds:
+                match_list = self.recreate_match(round["matches"])
+                round_number = round["round_number"]
+                round_start_time = round["start_time"]
+                round_result = round["result"]
+                round_end_time = round["end_time"]
+                round_in = Round(match_list, round_number)
+                round_in.start_time = round_start_time
+                round_in.result = round_result
+                round_in.end_time = round_end_time
+                tournament.rounds.append(round_in)
         return tournament
 
 
@@ -116,16 +117,9 @@ class CreateTournament:
                     tournament_players, number_of_players
                 )
             elif source_choice == "2":
-                new_player = self.manage_players.new_player()
-                while not new_player:
-                    new_player = self.manage_players.new_player()
-                if len(tournament_players) < number_of_players:
-                    tournament_players.append(new_player)
-                    self.player_menu.player_added(new_player.name)
-                else:
-                    self.player_menu.too_many_players(
-                        number_of_players, new_player.name
-                    )
+                self.add_player_from_input(
+                    tournament_players, number_of_players
+                )
             elif source_choice == "3":
                 self.player_menu.number_selected(
                     len(tournament_players), number_of_players
@@ -140,7 +134,13 @@ class CreateTournament:
                     removed_player = tournament_players.pop(player_choice)
                     self.player_menu.display_removed_player(removed_player)
             elif source_choice == "5":
-                self.validate_and_launch(tournament_players, number_of_players)
+                selection = self.validate_and_launch(
+                    tournament_players, number_of_players
+                )
+                if selection == "Not selected enough":
+                    pass
+                else:
+                    break
             else:
                 break
 
@@ -160,7 +160,7 @@ class CreateTournament:
             self.player_menu.display_choice_list(players_list)
             selected_indexes = self.player_menu.player_choice_add_prompt()
             for index in selected_indexes:
-                if index <= len(players_list):
+                if index < len(players_list):
                     player = players_list[index]
                     if player in tournament_players:
                         self.player_menu.player_already_in(player["name"])
@@ -176,6 +176,19 @@ class CreateTournament:
                     print(f"Choix {index} invalide.")
         else:
             self.player_menu.too_many_players(number_of_players)
+
+    def add_player_from_input(self, tournament_players, number_of_players):
+        """Add player to database and to tournament if space left."""
+        new_player = self.manage_players.new_player()
+        while not new_player:
+            new_player = self.manage_players.new_player()
+        if len(tournament_players) < number_of_players:
+            tournament_players.append(new_player.__dict__)
+            self.player_menu.player_added(new_player.name)
+        else:
+            self.player_menu.too_many_players(
+                number_of_players, new_player.name
+            )
 
     def validate_and_launch(self, tournament_players, number_of_players):
         """If list is full ask to validate and launch tournament."""
@@ -206,10 +219,14 @@ class CreateTournament:
             else:
                 print("Retour au choix des participants")
                 self.player_menu.player_selection_prompt()
+                return "Not selected enough"
         else:
             self.player_menu.number_selected(
                 len(tournament_players), number_of_players
             )
+            print("Retour au choix des participants")
+            self.player_menu.player_selection_prompt()
+            return "Not selected enough"
 
 
 class PlayTournament:
@@ -233,62 +250,98 @@ class PlayTournament:
                 self.previous_matches.append(match)
         self.saver = SaveData(tournament)
         self.match_draws = MatchDraw()
+        self.pause = False
 
     def start_tournament(self):
         """Start (or restart) the tournament"""
         tournament = self.tournament
         self.saver.save_state()
-        if (
-            0 < tournament.current_round <= len(tournament.rounds)
-            and tournament.rounds[tournament.current_round - 1].end_time
-            == "Round en cours"
-        ):
-            unfinished_round = tournament.rounds[tournament.current_round - 1]
-            self.view.display_unfinished_round_matches(unfinished_round)
-            for i in range(len(unfinished_round.result), 4):
-                match_result = MatchResult(
-                    unfinished_round.matches[i], tournament
-                )
-                match_result.select_winner()
-                match_result.add_score()
-                unfinished_round.record_result(i, match_result.winner)
+        while True:
+            if tournament.current_round == 0:
+                random.shuffle(self.players)
+            elif (
+                0 < tournament.current_round <= len(tournament.rounds)
+                and tournament.rounds[tournament.current_round - 1].end_time
+                == "Round en cours"
+            ):
+                unfinished_round = tournament.rounds[
+                    tournament.current_round - 1
+                ]
+                self.view.display_unfinished_round_matches(unfinished_round)
+                self.continue_round(unfinished_round, tournament)
+                if self.pause is True:
+                    break
+                unfinished_round.finish_round()
                 self.saver.save_state()
-            unfinished_round.finish_round()
-            self.view.round_end(unfinished_round.round_name)
-            self.saver.save_state()
-        if tournament.current_round == 0:
-            random.shuffle(self.players)
-        for i in range(tournament.current_round, tournament.number_of_rounds):
-            tournament.current_round += 1
-            self.saver.current_round = tournament.current_round
-            match_list = self.match_draws.draw_matches(
-                self.players, self.previous_matches
-            )
-            round = Round(match_list, i + 1)
-            tournament.rounds.append(round)
-            self.view.display_round_matches(round)
-            match_index = 0
-            for match in round.matches:
-                match_index += 1
-                match_result = MatchResult(match, tournament)
-                match_result.select_winner()
-                match_result.add_score()
-                round.record_result(match_index, match_result.winner)
-                self.saver.save_state()
-            round.finish_round()
-            self.saver.save_state()
-            if tournament.current_round < tournament.number_of_rounds:
-                next_round = self.base_view.ask_y_n(
-                    f"{self.view.round_end(round.round_name)}"
-                )
+                next_round = self.ask_next_round(tournament, unfinished_round)
                 if next_round == "n":
                     break
+            for i in range(
+                tournament.current_round, tournament.number_of_rounds
+            ):
+                round = self.play_round(tournament, i)
+                if self.pause is True:
+                    break
+                round.finish_round()
+                self.saver.save_state()
+                next_round = self.ask_next_round(tournament, round)
+                if next_round == "n":
+                    break
+            self.is_tournament_finished(tournament)
+            break
+
+    def continue_round(self, unfinished_round, tournament):
+        """Continue a recreated unfinished round"""
+        for i in range(len(unfinished_round.result), 4):
+            match_result = MatchResult(unfinished_round.matches[i], tournament)
+            match_result.select_winner()
+            if match_result.winner is None:
+                self.pause = True
+                self.saver.save_state()
+                break
+            match_result.add_score()
+            unfinished_round.record_result(i + 1, match_result.winner)
+            self.saver.save_state()
+
+    def play_round(self, tournament, i):
+        """Play the current round."""
+        tournament.current_round += 1
+        self.saver.current_round = tournament.current_round
+        match_list = self.match_draws.draw_matches(
+            self.players, self.previous_matches
+        )
+        round = Round(match_list, i + 1)
+        tournament.rounds.append(round)
+        self.view.display_round_matches(round)
+        match_index = 0
+        for match in round.matches:
+            match_index += 1
+            match_result = MatchResult(match, tournament)
+            match_result.select_winner()
+            if match_result.winner is None:
+                self.pause = True
+                self.saver.save_state()
+                break
+            match_result.add_score()
+            round.record_result(match_index, match_result.winner)
+            self.saver.save_state()
+        return round
+
+    def is_tournament_finished(self, tournament):
+        """Check if tournament is at the end or not"""
         if (tournament.current_round < tournament.number_of_rounds) or (
             tournament.rounds[tournament.current_round - 1].end_time
             == "Round en cours"
         ):
             self.saver.save_state()
-            self.base_view.display_main_menu()
         else:
             tournament.finish_tournament()
             self.saver.end_save(tournament)
+
+    def ask_next_round(self, tournament, round):
+        """Ask to start next round or return to menu"""
+        if tournament.current_round < tournament.number_of_rounds:
+            next_round = self.base_view.ask_y_n(
+                f"{self.view.round_end(round.round_name)}"
+            )
+            return next_round

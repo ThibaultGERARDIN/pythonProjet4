@@ -1,0 +1,328 @@
+{
+    "static_infos": {
+        "name": "past tournament exemple",
+        "location": "",
+        "start_date": "Sun 20 Oct 2024",
+        "description": "Tournoi d'\u00e9chec",
+        "number_of_rounds": 4,
+        "current_round": 4,
+        "end_date": "Sun 20 Oct 2024"
+    },
+    "tournament_result": [
+        "Gagnant : GERARDIN Thibault",
+        {
+            "name": "GERARDINThibault",
+            "date_of_birth": "01-03-1991",
+            "national_chess_id": "IJ45683",
+            "score": 3.0,
+            "lastname": "GERARDIN",
+            "firstname": "Thibault"
+        },
+        {
+            "name": "SIMONETONNicolas",
+            "date_of_birth": "07-08-1992",
+            "national_chess_id": "UV45812",
+            "score": 3,
+            "lastname": "SIMONETON",
+            "firstname": "Nicolas"
+        },
+        {
+            "name": "PLAYEROne",
+            "date_of_birth": "02-09-1986",
+            "national_chess_id": "HG45683",
+            "score": 2.0,
+            "lastname": "PLAYER",
+            "firstname": "One"
+        },
+        {
+            "name": "G\u00c9RARDIN\u00c9ric",
+            "date_of_birth": "12-02-1965",
+            "national_chess_id": "SJ45732",
+            "score": 2.0,
+            "lastname": "G\u00c9RARDIN",
+            "firstname": "\u00c9ric"
+        },
+        {
+            "name": "TESTJoueur",
+            "date_of_birth": "02-09-1925",
+            "national_chess_id": "AB14569",
+            "score": 2,
+            "lastname": "TEST",
+            "firstname": "Joueur"
+        },
+        {
+            "name": "CHAUMATMarie",
+            "date_of_birth": "11-11-1996",
+            "national_chess_id": "SJ45721",
+            "score": 1.5,
+            "lastname": "CHAUMAT",
+            "firstname": "Marie"
+        },
+        {
+            "name": "MILLET-LACOMBEM\u00e9gane",
+            "date_of_birth": "02-02-1993",
+            "national_chess_id": "QG85632",
+            "score": 1.5,
+            "lastname": "MILLET-LACOMBE",
+            "firstname": "M\u00e9gane"
+        },
+        {
+            "name": "CAMPENSBruno",
+            "date_of_birth": "07-12-1957",
+            "national_chess_id": "YM87456",
+            "score": 1.0,
+            "lastname": "CAMPENS",
+            "firstname": "Bruno"
+        }
+    ],
+    "tournament_rounds": [
+        {
+            "round_number": 1,
+            "round_name": "Round 1",
+            "start_time": "Sun 20 Oct 2024, 16:49",
+            "matches": [
+                [
+                    [
+                        "SIMONETONNicolas",
+                        "UV45812",
+                        0
+                    ],
+                    [
+                        "CAMPENSBruno",
+                        "YM87456",
+                        0
+                    ]
+                ],
+                [
+                    [
+                        "TESTJoueur",
+                        "AB14569",
+                        0
+                    ],
+                    [
+                        "G\u00c9RARDIN\u00c9ric",
+                        "SJ45732",
+                        0
+                    ]
+                ],
+                [
+                    [
+                        "GERARDINThibault",
+                        "IJ45683",
+                        0
+                    ],
+                    [
+                        "PLAYEROne",
+                        "HG45683",
+                        0
+                    ]
+                ],
+                [
+                    [
+                        "CHAUMATMarie",
+                        "SJ45721",
+                        0
+                    ],
+                    [
+                        "MILLET-LACOMBEM\u00e9gane",
+                        "QG85632",
+                        0
+                    ]
+                ]
+            ],
+            "result": [
+                "Match 1 : SIMONETONNicolas",
+                "Match 2 : G\u00c9RARDIN\u00c9ric",
+                "Match 3 : match nul",
+                "Match 4 : CHAUMATMarie"
+            ],
+            "end_time": "Sun 20 Oct 2024, 16:49"
+        },
+        {
+            "round_number": 2,
+            "round_name": "Round 2",
+            "start_time": "Sun 20 Oct 2024, 16:49",
+            "matches": [
+                [
+                    [
+                        "SIMONETONNicolas",
+                        "UV45812",
+                        1
+                    ],
+                    [
+                        "G\u00c9RARDIN\u00c9ric",
+                        "SJ45732",
+                        1
+                    ]
+                ],
+                [
+                    [
+                        "CHAUMATMarie",
+                        "SJ45721",
+                        1
+                    ],
+                    [
+                        "GERARDINThibault",
+                        "IJ45683",
+                        0.5
+                    ]
+                ],
+                [
+                    [
+                        "PLAYEROne",
+                        "HG45683",
+                        0.5
+                    ],
+                    [
+                        "CAMPENSBruno",
+                        "YM87456",
+                        0
+                    ]
+                ],
+                [
+                    [
+                        "TESTJoueur",
+                        "AB14569",
+                        0
+                    ],
+                    [
+                        "MILLET-LACOMBEM\u00e9gane",
+                        "QG85632",
+                        0
+                    ]
+                ]
+            ],
+            "result": [
+                "Match 1 : SIMONETONNicolas",
+                "Match 2 : GERARDINThibault",
+                "Match 3 : match nul",
+                "Match 4 : TESTJoueur"
+            ],
+            "end_time": "Sun 20 Oct 2024, 16:49"
+        },
+        {
+            "round_number": 3,
+            "round_name": "Round 3",
+            "start_time": "Sun 20 Oct 2024, 16:49",
+            "matches": [
+                [
+                    [
+                        "SIMONETONNicolas",
+                        "UV45812",
+                        2
+                    ],
+                    [
+                        "GERARDINThibault",
+                        "IJ45683",
+                        1.5
+                    ]
+                ],
+                [
+                    [
+                        "G\u00c9RARDIN\u00c9ric",
+                        "SJ45732",
+                        1
+                    ],
+                    [
+                        "CHAUMATMarie",
+                        "SJ45721",
+                        1
+                    ]
+                ],
+                [
+                    [
+                        "PLAYEROne",
+                        "HG45683",
+                        1.0
+                    ],
+                    [
+                        "TESTJoueur",
+                        "AB14569",
+                        1
+                    ]
+                ],
+                [
+                    [
+                        "CAMPENSBruno",
+                        "YM87456",
+                        0.5
+                    ],
+                    [
+                        "MILLET-LACOMBEM\u00e9gane",
+                        "QG85632",
+                        0
+                    ]
+                ]
+            ],
+            "result": [
+                "Match 1 : GERARDINThibault",
+                "Match 2 : match nul",
+                "Match 3 : PLAYEROne",
+                "Match 4 : MILLET-LACOMBEM\u00e9gane"
+            ],
+            "end_time": "Sun 20 Oct 2024, 16:49"
+        },
+        {
+            "round_number": 4,
+            "round_name": "Round 4",
+            "start_time": "Sun 20 Oct 2024, 16:49",
+            "matches": [
+                [
+                    [
+                        "GERARDINThibault",
+                        "IJ45683",
+                        2.5
+                    ],
+                    [
+                        "G\u00c9RARDIN\u00c9ric",
+                        "SJ45732",
+                        1.5
+                    ]
+                ],
+                [
+                    [
+                        "SIMONETONNicolas",
+                        "UV45812",
+                        2
+                    ],
+                    [
+                        "PLAYEROne",
+                        "HG45683",
+                        2.0
+                    ]
+                ],
+                [
+                    [
+                        "CHAUMATMarie",
+                        "SJ45721",
+                        1.5
+                    ],
+                    [
+                        "TESTJoueur",
+                        "AB14569",
+                        1
+                    ]
+                ],
+                [
+                    [
+                        "MILLET-LACOMBEM\u00e9gane",
+                        "QG85632",
+                        1
+                    ],
+                    [
+                        "CAMPENSBruno",
+                        "YM87456",
+                        0.5
+                    ]
+                ]
+            ],
+            "result": [
+                "Match 1 : match nul",
+                "Match 2 : SIMONETONNicolas",
+                "Match 3 : TESTJoueur",
+                "Match 4 : match nul"
+            ],
+            "end_time": "Sun 20 Oct 2024, 16:49"
+        }
+    ]
+}

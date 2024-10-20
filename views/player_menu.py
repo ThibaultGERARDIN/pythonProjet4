@@ -96,20 +96,26 @@ class PlayerMenu:
             f"Merci d'indiquer le gagnant du match {match} :\n"
             f"1 - {match.players[0].name}\n"
             f"2 - {match.players[1].name}\n"
-            f"3 - Match nul\n"
+            "3 - Match nul\n"
+            "0 - PAUSE - Retour au menu principal\n"
         )
         while (
             not chosen_winner == "1"
             and not chosen_winner == "2"
             and not chosen_winner == "3"
+            and not chosen_winner == "0"
         ):
-            chosen_winner = input("Choix invalide, merci de choisir 1, 2 ou 3")
+            chosen_winner = input(
+                "Choix invalide, merci de choisir 0, 1, 2 ou 3 :"
+            )
         if chosen_winner == "1":
             winner = match.players[0]
         elif chosen_winner == "2":
             winner = match.players[1]
-        else:
+        elif chosen_winner == "3":
             winner = "draw"
+        else:
+            winner = None
         return winner
 
     def display_complete_list(self, players_list):

@@ -1,6 +1,7 @@
 """Define the main controller used in the program."""
 
 import os
+import re
 from views.base import View
 from views.player_menu import PlayerMenu
 from views.tournament_menu import TournamentMenu
@@ -83,24 +84,7 @@ class Controller:
         self.tournament_view.display_main_menu()
         menu_choice = self.tournament_view.navigate_main_menu()
         if menu_choice == "1":
-            tournament_files_list = os.listdir(PAST_TOURNAMENT_PATH)
-            chosen_file_index = self.tournament_view.display_past_list(
-                tournament_files_list
-            )
-            if chosen_file_index:
-                chosen_file_name = tournament_files_list[chosen_file_index - 1]
-                file_path = PAST_TOURNAMENT_PATH + chosen_file_name
-                tournament_to_display = self.helper.load_file(file_path)
-                if tournament_to_display:
-                    report_choice = self.tournament_view.choose_report_type()
-                    if report_choice in ["1", "2", "3"]:
-                        self.tournament_view.display_tournament_report(
-                            tournament_to_display, report_choice
-                        )
-                    else:
-                        self.tournament_view.display_main_menu()
-                else:
-                    self.tournament_view.display_main_menu()
+            self.past_tournaments_list()
         elif menu_choice == "2" and tournoi_existant:
             unfinished_tournament = self.loader.load_state()
             tournament = ReloadTounament(
@@ -128,3 +112,39 @@ class Controller:
                 self.tournament_view.display_main_menu()
         else:
             self.base_view.display_main_menu()
+
+    def past_tournaments_list(self):
+        tournament_files_list = []
+        raw_files_list = os.listdir(PAST_TOURNAMENT_PATH)
+        for file in raw_files_list:
+            past_tournament = {}
+            file = re.sub(".json", "", file)
+            split_file = re.split("__", file)
+            past_tournament["name"] = split_file[0]
+            past_tournament["end_time"] = split_file[1]
+            tournament_files_list.append(past_tournament)
+        tournament_files_list.sort(
+            key=lambda file: file["end_time"], reverse=True
+        )
+        chosen_file_index = self.tournament_view.display_past_list(
+            tournament_files_list
+        )
+        if chosen_file_index:
+            chosen_file_name = (
+                tournament_files_list[chosen_file_index - 1]["name"]
+                + "__"
+                + tournament_files_list[chosen_file_index - 1]["end_time"]
+                + ".json"
+            )
+            file_path = PAST_TOURNAMENT_PATH + chosen_file_name
+            tournament_to_display = self.helper.load_file(file_path)
+            if tournament_to_display:
+                report_choice = self.tournament_view.choose_report_type()
+                if report_choice in ["1", "2", "3"]:
+                    self.tournament_view.display_tournament_report(
+                        tournament_to_display, report_choice
+                    )
+                else:
+                    self.tournament_view.display_main_menu()
+            else:
+                self.tournament_view.display_main_menu()

@@ -126,13 +126,14 @@ class SaveData:
             tournament_name = re.sub(" ", "-", self.static_infos["name"])
             end_save_name = (
                 tournament_name.lower()
-                + "-ANNULE-"
-                + time.strftime("%Y%m%d-%H%M%S")
+                + "-ANNULE"
+                + "__"
+                + time.strftime("%d%m%Y-%H%M%S")
             )
         else:
             tournament_name = re.sub(" ", "-", self.static_infos["name"])
-            end_save_name = tournament_name.lower() + time.strftime(
-                "%Y%m%d-%H%M%S"
+            end_save_name = (
+                tournament_name.lower() + "__" + time.strftime("%d%m%Y-%H%M%S")
             )
         helper.save_file(
             f"{PAST_TOURNAMENT_PATH}{end_save_name}.json", end_file
