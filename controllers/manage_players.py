@@ -104,6 +104,7 @@ class ManagePlayers:
             return None
 
     def search_by_name(self, players_list):
+        """Search player by lastname in list"""
         players_found = []
         player_name = self.view.search_name_prompt()
         for player in players_list:
@@ -115,6 +116,7 @@ class ManagePlayers:
         return players_found
 
     def search_by_ine(self, players_list):
+        """Search player by INE in list"""
         players_found = []
         player_ine = self.view.search_ine_prompt()
         for player in players_list:
